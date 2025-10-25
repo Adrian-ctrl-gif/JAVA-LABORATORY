@@ -1,10 +1,17 @@
 /*
-* Лабораторная работа №1
-* Тема: Менеджер задач (To-Do List)
-* Студент: Пантелеев Адриан Денисович
-* Группа: 24КНТ-1
-* Билет: 1
-*/
+ * Лабораторная работа №1
+ * Тема: Менеджер задач (To-Do List)
+ * Студент: Пантелеев Адриан Денисович
+ * Группа: 24КНТ-1
+ * Билет: 1
+
+ * Программа представляет собой консольный менеджер задач с возможностью:
+ * - создания, редактирования и удаления задач,
+ * - изменения приоритета,
+ * - установки срока выполнения,
+ * - сортировки и поиска задач,
+ * - удобного отображения через смайлики и понятное меню.
+ */
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -13,12 +20,13 @@ import java.util.*;
 public class ToDoConsoleApp {
     private static final Scanner scanner = new Scanner(System.in);
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private final List<Task> tasks = new ArrayList<>();
+    private final List<Task> tasks = new ArrayList<>(); // Список всех задач
 
     public static void main(String[] args) {
-        new ToDoConsoleApp().launch();
+        new ToDoConsoleApp().launch(); // Запуск приложения
     }
 
+    // Основной метод приложения: отображение меню и обработка выбора пользователя
     public void launch() {
         Map<String, Runnable> actions = Map.of(
             "1", this::addTask,
@@ -36,11 +44,13 @@ public class ToDoConsoleApp {
             printMenu();
             String choice = scanner.nextLine().trim();
             if (choice.equals("0")) break;
+            // Выполнение выбранного действия или вывод ошибки
             actions.getOrDefault(choice, () -> System.out.println("❌ Неверный выбор.")).run();
         }
         System.out.println("👋 Выход. До свидания!");
     }
 
+    // Печать меню с использованием смайликов для удобства
     private void printMenu() {
         System.out.println("\n📋 Меню задач:");
         System.out.println("1️⃣ - Создать");
@@ -55,6 +65,7 @@ public class ToDoConsoleApp {
         System.out.print("Выбор: ");
     }
 
+    // Создание новой задачи
     private void addTask() {
         String title = readInput("📝 Название: ", "(без названия)");
         String desc = readInput("✏️ Описание: ", "");
@@ -64,6 +75,7 @@ public class ToDoConsoleApp {
         System.out.println("✅ Задача создана.");
     }
 
+    // Редактирование существующей задачи по ID
     private void editTask() {
         Task t = selectTask();
         if (t == null) return;
@@ -74,6 +86,7 @@ public class ToDoConsoleApp {
         System.out.println("✅ Задача обновлена.");
     }
 
+    // Удаление задачи по ID
     private void deleteTask() {
         Task t = selectTask();
         if (t != null) {
@@ -85,6 +98,7 @@ public class ToDoConsoleApp {
         }
     }
 
+    // Изменение приоритета задачи
     private void changePriority() {
         Task t = selectTask();
         if (t != null) {
@@ -93,27 +107,32 @@ public class ToDoConsoleApp {
         }
     }
 
+    // Установка или изменение срока выполнения задачи
     private void setDueDate() {
         Task t = selectTask();
         if (t != null) t.dueDate = readDate("📅 Новый срок (Enter чтобы убрать): ");
     }
 
+    // Отображение всех задач
     private void listTasks() {
         if (tasks.isEmpty()) { System.out.println("📭 Нет задач."); return; }
         tasks.forEach(System.out::println);
     }
 
+    // Сортировка задач по дате выполнения
     private void sortByDate() {
         tasks.sort(Comparator.comparing(t -> t.dueDate, Comparator.nullsLast(Comparator.naturalOrder())));
         listTasks();
     }
 
+    // Поиск задач по названию
     private void searchTasks() {
         System.out.print("🔍 Поиск по названию: ");
         String q = scanner.nextLine().trim().toLowerCase();
         tasks.stream().filter(t -> t.title.toLowerCase().contains(q)).forEach(System.out::println);
     }
 
+    // Выбор задачи по ID
     private Task selectTask() {
         listTasks();
         System.out.print("🆔 Введите ID задачи: ");
@@ -122,12 +141,14 @@ public class ToDoConsoleApp {
         } catch (NumberFormatException e) { return null; }
     }
 
+    // Чтение строки с возможностью значения по умолчанию
     private String readInput(String prompt, String defaultVal) {
         System.out.print(prompt);
         String s = scanner.nextLine().trim();
         return s.isEmpty() ? defaultVal : s;
     }
 
+    // Чтение приоритета задачи с проверкой
     private Priority readPriority(String prompt, Priority defaultVal) {
         System.out.print(prompt);
         String s = scanner.nextLine().trim().toUpperCase();
@@ -135,6 +156,7 @@ public class ToDoConsoleApp {
         try { return Priority.valueOf(s); } catch (Exception e) { return defaultVal; }
     }
 
+    // Чтение даты с проверкой формата
     private LocalDate readDate(String prompt) {
         System.out.print(prompt);
         String s = scanner.nextLine().trim();
@@ -142,6 +164,7 @@ public class ToDoConsoleApp {
         try { return LocalDate.parse(s, DATE_FMT); } catch (Exception e) { return null; }
     }
 
+    // Класс Task описывает задачу с уникальным ID, заголовком, описанием, сроком и приоритетом
     private static class Task {
         private static int NEXT_ID = 1;
         int id = NEXT_ID++;
@@ -154,13 +177,14 @@ public class ToDoConsoleApp {
             this.dueDate = dueDate; this.priority = priority;
         }
 
+        @Override
         public String toString() {
             return String.format("ID=%d | %s | pri=%s | due=%s\n    %s",
                 id, title, priority, dueDate == null ? "-" : dueDate.format(DATE_FMT), description);
         }
     }
 
+    // Перечисление приоритетов задачи
     private enum Priority { LOW, MEDIUM, HIGH }
 }
-
 
